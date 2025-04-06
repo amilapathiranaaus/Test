@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Article App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .article-form {
+            margin-bottom: 20px;
+        }
+        
+        textarea,
+        input {
+            width: 100%;
+            margin: 10px 0;
+            padding: 8px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .article {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="article-form">
+        <h2>Write New Article</h2>
+        <input type="text" id="title" placeholder="Article Title">
+        <textarea id="content" rows="5" placeholder="Write your article here..."></textarea>
+        <button onclick="saveArticle()">Publish Article</button>
+    </div>
+
+    <div id="articles">
+        <h2>Published Articles</h2>
+    </div>
+
+    <script>
+        // Load articles on page load
+        window.onload = loadArticles;
+
+        async function saveArticle() {
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+
+            if (title && content) {
+                const article = {
+                    title: title,
+                    content: content,
+                    date: new Date().toLocaleString()
+                };
+
+                // Send article to server
+                await fetch('/articles', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(article)
+                });
+
+                // Clear form
+                document.getElementById('title').value = '';
+                document.getElementById('content').value = '';
+
+                // Reload articles
+                loadArticles();
+            }
+        }
+
+        async function loadArticles() {
+            const response = await fetch('/articles');
+            const articles = await response.json();
+            const articlesDiv = document.getElementById('articles');
+
+            articlesDiv.innerHTML = '<h2>Published Articles</h2>';
+            articles.forEach(article => {
+                const articleDiv = document.createElement('div');
+                articleDiv.className = 'article';
+                articleDiv.innerHTML = `
+                    <h3>${article.title}</h3>
+                    <p>${article.content}</p>
+                    <small>Published: ${article.date}</small>
+                `;
+                articlesDiv.appendChild(articleDiv);
+            });
+        }
+    </script>
+</body>
+
+</html>
